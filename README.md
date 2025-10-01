@@ -154,6 +154,4 @@ Amul_RoseLassi_Tracker/
 
 ---
 
-
-
 **Made with ❤️ for Amul Rose Lassi lovers**

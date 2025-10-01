@@ -7,6 +7,8 @@ import random
 import asyncio
 from datetime import datetime
 from dotenv import load_dotenv
+from flask import Flask
+from threading import Thread
 
 # Load environment variables
 load_dotenv()
@@ -77,6 +79,26 @@ URL = "https://shop.amul.com/api/1/entity/ms.products?q=%7B%22alias%22:%22amul-h
 # Retry configuration
 MAX_RETRIES = 3
 INITIAL_BACKOFF = 5  # seconds
+
+# Flask app for Render web service (keeps service alive)
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return {
+        "status": "running",
+        "service": "Amul Rose Lassi Stock Tracker",
+        "message": "Tracker is running in the background. Check logs for status."
+    }
+
+@app.route('/health')
+def health():
+    return {"status": "healthy"}, 200
+
+def run_flask():
+    """Run Flask server in background thread"""
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
 
 def get_headers():
     """Build custom headers for Amul API (Cloudflare handled by cloudscraper)"""
@@ -237,6 +259,11 @@ def main():
         time.sleep(sleep_time)
 
 if __name__ == "__main__":
+    # Start Flask server in background thread (for Render web service)
+    flask_thread = Thread(target=run_flask, daemon=True)
+    flask_thread.start()
+    logger.info("Flask server started on background thread")
+    
     try:
         main()
     except KeyboardInterrupt:
