@@ -18,7 +18,7 @@ CHECK_INTERVAL = int(os.getenv("CHECK_INTERVAL", 300))
 
 # Validate required environment variables
 if not TELEGRAM_TOKEN or not CHAT_ID:
-    raise ValueError("TELEGRAM_TOKEN and CHAT_ID must be set in .env file")
+    raise ValueError("TELEGRAM_TOKEN and CHAT_ID must be set as environment variables")
 
 # Setup logging
 logging.basicConfig(
