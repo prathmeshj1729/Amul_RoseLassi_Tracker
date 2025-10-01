@@ -3,6 +3,7 @@
 Monitors Amul High Protein Rose Lassi stock and sends Telegram notifications when available.
 
 ## Features
+
 - ✅ Automatic Cloudflare bypass using cloudscraper
 - ✅ Auto-refresh cookies when expired
 - ✅ Telegram notifications
@@ -12,6 +13,7 @@ Monitors Amul High Protein Rose Lassi stock and sends Telegram notifications whe
 ## Quick Deploy to Railway (Recommended)
 
 1. **Push to GitHub:**
+
    ```bash
    git init
    git add .
@@ -21,6 +23,7 @@ Monitors Amul High Protein Rose Lassi stock and sends Telegram notifications whe
    ```
 
 2. **Deploy on Railway:**
+
    - Go to [railway.app](https://railway.app)
    - Sign in with GitHub
    - Click "New Project" → "Deploy from GitHub repo"
@@ -70,19 +73,21 @@ python tracker.py
 ## Environment Variables
 
 Required:
+
 - `TELEGRAM_TOKEN` - Your Telegram bot token from @BotFather
 - `CHAT_ID` - Your Telegram chat ID
 
 Optional:
+
 - `CHECK_INTERVAL` - Seconds between checks (default: 300)
 - `CF_CLEARANCE`, `JSESSIONID`, `CFUVID`, `CF_BM`, `EXT_NAME` - Cloudflare cookies
 
 ## Monitoring
 
 The tracker sends Telegram notifications for:
+
 - ✅ Startup confirmation
 - ✅ Product in stock (with price and link)
 - ⚠️ Critical errors
 
 Check logs for detailed monitoring.
-
