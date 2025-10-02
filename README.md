@@ -1,90 +1,30 @@
-# Amul Rose Lassi Stock Tracker 🥛
+# Amul Rose Lassi Stock Tracker
 
-Automated 24/7 stock monitoring for **Amul High Protein Rose Lassi** with instant Telegram notifications.
+Background service that monitors Amul Rose Lassi product availability and sends Telegram notifications when stock is detected.
 
-## ✨ Features
+## Features
 
-- ✅ **Fully automatic cookie management** - no manual updates needed!
-- ✅ **Automatic Cloudflare bypass** using cloudscraper
-- ✅ **Self-healing session refresh** when cookies expire
-- ✅ **Instant Telegram notifications** when product is in stock
-- ✅ **Smart retry logic** with exponential backoff
-- ✅ **Random jitter** to avoid detection
-- ✅ **Checks every 5 minutes** (configurable)
-- ✅ **Free 24/7 cloud hosting** on Render
-- ✅ **Zero maintenance** - set it and forget it!
+- Automated Cloudflare challenge bypass using cloudscraper
+- Self-healing session management with automatic cookie refresh
+- Configurable check intervals with random jitter to avoid detection
+- Telegram notifications for stock availability and system events
+- Exponential backoff retry logic with error handling
+- Containerized deployment ready
 
----
+## Architecture
 
-## 🚀 Quick Deploy to Render.com (Recommended)
+- **Language**: Python 3.11
+- **Dependencies**: cloudscraper, python-telegram-bot, python-dotenv
+- **Deployment**: Docker container (single service)
+- **Resource Usage**: ~50-100MB RAM, <0.5% CPU
 
-### Prerequisites
+## Prerequisites
 
-- GitHub account
-- Telegram bot token (get from [@BotFather](https://t.me/BotFather))
-- Telegram chat ID (get from [@userinfobot](https://t.me/userinfobot))
+- Python 3.11+
+- Telegram Bot Token (from [@BotFather](https://t.me/BotFather))
+- Telegram Chat ID (from [@userinfobot](https://t.me/userinfobot))
 
-### Deployment Steps
-
-1. **Fork/Clone this repository to GitHub**
-
-2. **Sign up on Render:**
-
-   - Go to https://render.com
-   - Sign up with GitHub (free account)
-
-3. **Create a New Background Worker:**
-
-   - Click **"New +"** → **"Background Worker"**
-   - Select this repository
-   - Render auto-detects settings from `render.yaml`
-
-4. **Add Environment Variables:**
-   Go to "Environment" tab and add:
-
-   | Variable         | Value                              | Description                    |
-   | ---------------- | ---------------------------------- | ------------------------------ |
-   | `TELEGRAM_TOKEN` | `your_bot_token`                   | From @BotFather                |
-   | `CHAT_ID`        | `your_chat_id`                     | From @userinfobot              |
-   | `CHECK_INTERVAL` | `300`                              | Seconds between checks (5 min) |
-
-5. **Deploy!**
-   - Click "Create Background Worker"
-   - Monitor logs to verify it's running
-   - You'll receive a Telegram notification confirming startup
-
-## 📊 Monitoring
-
-### On Render:
-
-- **Logs:** Dashboard → Your service → Logs
-- **Restart:** Dashboard → Your service → Manual Deploy → Deploy latest commit
-
-### Telegram Notifications:
-
-- ✅ **Startup confirmation** when tracker starts
-- ✅ **Product in stock** alert with price and link
-- ⚠️ **Error alerts** for critical issues
-
-### Log Messages:
-
-```
-2025-10-02 04:42:34 - INFO - Initialized 5 cookies in session
-2025-10-02 04:42:34 - INFO - Successfully obtained fresh session with 6 cookies
-2025-10-02 04:42:34 - INFO - Amul Rose Lassi Stock Tracker Started
-2025-10-02 04:42:35 - INFO - Check #1 at 2025-10-02 04:42:35
-2025-10-02 04:42:35 - INFO - Product still out of stock: Amul High Protein Rose Lassi
-```
-
-**Key things to look for:**
-
-- ✅ "Successfully obtained fresh session" - automatic cookies working!
-- ✅ "Telegram notification sent successfully" - notifications working
-- ✅ "Product still out of stock" or "PRODUCT IN STOCK!" - monitoring working
-
----
-
-## 🛠️ Local Development
+## Local Development
 
 ### Setup
 
@@ -95,66 +35,162 @@ cd Amul_RoseLassi_Tracker
 
 # Create virtual environment
 python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Create .env file
+# Configure environment
 cat > .env << EOF
 TELEGRAM_TOKEN=your_telegram_bot_token
 CHAT_ID=your_telegram_chat_id
 CHECK_INTERVAL=300
 EOF
+```
 
-# Run tracker
+### Run
+
+```bash
 python tracker.py
 ```
 
-### Testing
-
-Monitor the logs to ensure:
-
-- ✅ Fresh session obtained automatically
-- ✅ Telegram notification sent on startup
-- ✅ API requests returning 200 status
-- ✅ Product data being fetched correctly
-
----
-
-## 🤖 How Automatic Cookie Management Works
-
-1. **Startup:**
-
-   - Loads fallback cookies from environment (if provided)
-   - Visits shop.amul.com to get fresh cookies
-   - Cloudscraper automatically solves Cloudflare challenges
-
-2. **During Operation:**
-
-   - Uses fresh cookies for all API calls
-   - If 401/403 errors occur, automatically refreshes session
-   - Gets new cookies without any manual intervention
-
-3. **Result:**
-   - **Zero manual cookie updates needed!**
-   - Tracker runs indefinitely without maintenance
-   - Self-healing and fault-tolerant
-
----
-
-## 📁 Project Structure
+Expected output:
 
 ```
-Amul_RoseLassi_Tracker/
-├── tracker.py           # Main tracker script
-├── requirements.txt     # Python dependencies
-├── render.yaml         # Render deployment config
-├── .env               # Local environment variables (git ignored)
-├── .gitignore         # Git ignore rules
+INFO - Successfully obtained fresh session with 6 cookies
+INFO - Amul Rose Lassi Stock Tracker Started
+INFO - Telegram notification sent successfully
+INFO - Check #1 at 2025-10-02 12:00:00
+INFO - Product still out of stock: Amul High Protein Rose Lassi
+```
+
+## Docker Deployment
+
+### Build Image
+
+```bash
+# Build
+docker build -t amul-tracker:latest .
+
+# Verify
+docker images | grep amul-tracker
+```
+
+Image size: ~150MB
+
+### Run Container
+
+```bash
+# Create .env file first (see Local Development section)
+
+# Run with auto-restart
+docker run -d \
+  --name amul-tracker \
+  --restart unless-stopped \
+  --env-file .env \
+  amul-tracker:latest
+
+# Check logs
+docker logs -f amul-tracker
+
+# Check status
+docker ps | grep amul-tracker
+```
+
+### Export/Import (for remote deployment)
+
+```bash
+# Export
+docker save amul-tracker:latest | gzip > amul-tracker.tar.gz
+
+# Transfer to remote host
+scp amul-tracker.tar.gz user@remote-host:~/
+
+# On remote host - Import and run
+gunzip -c amul-tracker.tar.gz | docker load
+docker run -d --name amul-tracker --restart unless-stopped --env-file .env amul-tracker:latest
+```
+
+## Production Deployment
+
+### Environment Variables
+
+| Variable         | Required | Default | Description                        |
+| ---------------- | -------- | ------- | ---------------------------------- |
+| `TELEGRAM_TOKEN` | Yes      | -       | Telegram bot authentication token  |
+| `CHAT_ID`        | Yes      | -       | Telegram chat ID for notifications |
+| `CHECK_INTERVAL` | No       | 300     | Seconds between stock checks       |
+
+### Container Management
+
+```bash
+# View logs
+docker logs -f amul-tracker
+
+# Check resource usage
+docker stats amul-tracker --no-stream
+
+# Restart
+docker restart amul-tracker
+
+# Stop
+docker stop amul-tracker
+
+# Remove
+docker stop amul-tracker && docker rm amul-tracker
+```
+
+### Health Checks
+
+Monitor logs for:
+
+- `Successfully obtained fresh session` - Session management working
+- `Telegram notification sent successfully` - Notifications working
+- `Product still out of stock` or `PRODUCT IN STOCK!` - Monitoring active
+- `401/403` errors followed by `Refreshing session` - Auto-healing working
+
+## How It Works
+
+1. **Initialization**: Loads environment variables, initializes cloudscraper session
+2. **Session Setup**: Visits Amul shop to obtain fresh cookies and solve Cloudflare challenges
+3. **Monitoring Loop**: Polls product API at configured intervals with random jitter
+4. **Error Handling**: Automatically refreshes session on 401/403 errors
+5. **Notifications**: Sends Telegram alerts on stock detection, startup, and errors
+6. **Termination**: Stops monitoring once product is found in stock
+
+## Project Structure
+
+```
+.
+├── tracker.py          # Main application
+├── requirements.txt    # Python dependencies
+├── Dockerfile         # Container definition
+├── .dockerignore      # Docker build exclusions
+├── .gitignore         # Git exclusions
 └── README.md          # This file
 ```
 
----
+## Technical Details
+
+### Cookie Management
+
+- Automatic Cloudflare challenge solving via cloudscraper
+- Session cookies obtained from shop.amul.com homepage
+- Auto-refresh on authentication failures (401/403)
+- No manual cookie updates required
+
+### API Integration
+
+- Target: Amul Shop Product API
+- Method: GET with custom headers (TID, Base_Url, Frontend)
+- Response: JSON with product availability data
+- Rate limiting: Configurable interval + random jitter (±10%)
+
+### Error Handling
+
+- Retry logic: 3 attempts with exponential backoff
+- Session refresh on auth errors (unlimited retries)
+- Graceful shutdown on KeyboardInterrupt
+- Crash notifications via Telegram
 
 **Made with ❤️ for Amul Rose Lassi lovers**
