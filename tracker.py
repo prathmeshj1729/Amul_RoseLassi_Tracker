@@ -71,7 +71,31 @@ def initialize_cookies():
     
     logger.info(f"Initialized {len(cookies)} cookies in session")
 
+def get_fresh_session():
+    """
+    Get fresh session by visiting the main site first
+    This allows cloudscraper to solve Cloudflare challenges automatically
+    """
+    try:
+        logger.info("Obtaining fresh session from main site...")
+        # Visit main page to get fresh cookies
+        resp = scraper.get("https://shop.amul.com/", timeout=15)
+        if resp.status_code == 200:
+            cookie_count = len(list(scraper.cookies))
+            logger.info(f"Successfully obtained fresh session with {cookie_count} cookies")
+            return True
+        else:
+            logger.warning(f"Failed to get fresh session: {resp.status_code}")
+            return False
+    except Exception as e:
+        logger.error(f"Error getting fresh session: {e}")
+        return False
+
 initialize_cookies()
+
+# Try to get fresh session on startup (optional - makes cookies from env less critical)
+# This allows cloudscraper to automatically solve Cloudflare challenges
+get_fresh_session()
 
 # Amul API endpoint for Rose Lassi
 URL = "https://shop.amul.com/api/1/entity/ms.products?q=%7B%22alias%22:%22amul-high-protein-rose-lassi-200-ml-or-pack-of-30%22%7D&limit=1"
@@ -140,8 +164,14 @@ def refresh_session():
         }
     )
     
-    # Reinitialize cookies
-    initialize_cookies()
+    # First, try to get fresh session from main site (lets cloudscraper solve challenges)
+    if get_fresh_session():
+        logger.info("Got fresh session from main site")
+    else:
+        # Fallback: use environment cookies
+        logger.info("Falling back to environment cookies")
+        initialize_cookies()
+    
     logger.info("Session refreshed successfully")
 
 def check_stock():

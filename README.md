@@ -4,13 +4,15 @@ Automated 24/7 stock monitoring for **Amul High Protein Rose Lassi** with instan
 
 ## ✨ Features
 
+- ✅ **Fully automatic cookie management** - no manual updates needed!
 - ✅ **Automatic Cloudflare bypass** using cloudscraper
-- ✅ **Auto-refresh cookies** when expired (401/403 handling)
+- ✅ **Self-healing session refresh** when cookies expire
 - ✅ **Instant Telegram notifications** when product is in stock
 - ✅ **Smart retry logic** with exponential backoff
 - ✅ **Random jitter** to avoid detection
 - ✅ **Checks every 5 minutes** (configurable)
 - ✅ **Free 24/7 cloud hosting** on Render
+- ✅ **Zero maintenance** - set it and forget it!
 
 ---
 
@@ -45,34 +47,11 @@ Automated 24/7 stock monitoring for **Amul High Protein Rose Lassi** with instan
    | `TELEGRAM_TOKEN` | `your_bot_token`                   | From @BotFather                |
    | `CHAT_ID`        | `your_chat_id`                     | From @userinfobot              |
    | `CHECK_INTERVAL` | `300`                              | Seconds between checks (5 min) |
-   | `CF_CLEARANCE`   | `your_cookie`                      | Cloudflare clearance cookie    |
-   | `JSESSIONID`     | `your_cookie`                      | Session cookie                 |
-   | `CFUVID`         | `your_cookie`                      | Cloudflare UUID                |
-   | `CF_BM`          | `your_cookie`                      | Cloudflare bot management      |
-   | `EXT_NAME`       | `ojplmecpdpgccookcobabopnaifgidhf` | Extension name                 |
 
 5. **Deploy!**
    - Click "Create Background Worker"
    - Monitor logs to verify it's running
    - You'll receive a Telegram notification confirming startup
-
----
-
-## 🍪 How to Get Cloudflare Cookies
-
-1. **Open Browser DevTools** (F12)
-2. **Go to Network tab**
-3. **Visit** https://shop.amul.com/
-4. **Find any request** to `shop.amul.com`
-5. **Copy cookies from Request Headers:**
-   - `cf_clearance`
-   - `jsessionid`
-   - `_cfuvid`
-   - `__cf_bm`
-
-**Note:** These cookies expire periodically. The tracker has auto-refresh logic, but you may need to update them manually if you see repeated 401 errors.
-
----
 
 ## 📊 Monitoring
 
@@ -90,10 +69,18 @@ Automated 24/7 stock monitoring for **Amul High Protein Rose Lassi** with instan
 ### Log Messages:
 
 ```
+2025-10-02 04:42:34 - INFO - Initialized 5 cookies in session
+2025-10-02 04:42:34 - INFO - Successfully obtained fresh session with 6 cookies
 2025-10-02 04:42:34 - INFO - Amul Rose Lassi Stock Tracker Started
 2025-10-02 04:42:35 - INFO - Check #1 at 2025-10-02 04:42:35
 2025-10-02 04:42:35 - INFO - Product still out of stock: Amul High Protein Rose Lassi
 ```
+
+**Key things to look for:**
+
+- ✅ "Successfully obtained fresh session" - automatic cookies working!
+- ✅ "Telegram notification sent successfully" - notifications working
+- ✅ "Product still out of stock" or "PRODUCT IN STOCK!" - monitoring working
 
 ---
 
@@ -118,11 +105,6 @@ cat > .env << EOF
 TELEGRAM_TOKEN=your_telegram_bot_token
 CHAT_ID=your_telegram_chat_id
 CHECK_INTERVAL=300
-CF_CLEARANCE=your_cloudflare_cookie
-JSESSIONID=your_session_cookie
-CFUVID=your_cfuvid_cookie
-CF_BM=your_cf_bm_cookie
-EXT_NAME=ojplmecpdpgccookcobabopnaifgidhf
 EOF
 
 # Run tracker
@@ -133,10 +115,31 @@ python tracker.py
 
 Monitor the logs to ensure:
 
-- ✅ Cookies initialized successfully
+- ✅ Fresh session obtained automatically
 - ✅ Telegram notification sent on startup
 - ✅ API requests returning 200 status
 - ✅ Product data being fetched correctly
+
+---
+
+## 🤖 How Automatic Cookie Management Works
+
+1. **Startup:**
+
+   - Loads fallback cookies from environment (if provided)
+   - Visits shop.amul.com to get fresh cookies
+   - Cloudscraper automatically solves Cloudflare challenges
+
+2. **During Operation:**
+
+   - Uses fresh cookies for all API calls
+   - If 401/403 errors occur, automatically refreshes session
+   - Gets new cookies without any manual intervention
+
+3. **Result:**
+   - **Zero manual cookie updates needed!**
+   - Tracker runs indefinitely without maintenance
+   - Self-healing and fault-tolerant
 
 ---
 
